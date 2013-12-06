@@ -1,0 +1,91 @@
+#!/usr/bin/python3
+
+# Copyright © 2013 Jakub Wilk <jwilk@jwilk.net>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the “Software”), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import argparse
+import operator
+
+import urllib3
+import requests
+
+class Dumper(object):
+
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.verify = True
+        self.session.trust_env = False
+        self.session.headers['User-Agent'] = 'bitbucket-vanity (https://bitbucket.org/jwilk/bitbucket-vanity)'
+
+    def dump_followers(self, user):
+        print('followers:')
+        url = 'https://bitbucket.org/api/1.0/users/{user}/followers'.format(user=user)
+        response = self.session.get(url)
+        data = response.json()
+        followers = data['followers']
+        followers = sorted(followers, key=operator.itemgetter('username'))
+        for follower in followers:
+            name = '{display_name} <{username}>'.format(**follower)
+            print(' -', name)
+        print()
+
+    def dump_repositories(self, user):
+        print('repositories:')
+        print()
+        url = 'https://bitbucket.org/api/1.0/users/{user}'.format(user=user)
+        response = self.session.get(url)
+        data = response.json()
+        repos = data['repositories']
+        repos = sorted(repos, key=operator.itemgetter('name'))
+        for repo in repos:
+            ident = repo['resource_uri'].lstrip('/')
+            url = 'https://bitbucket.org/api/{ident}/followers'.format(ident=ident)
+            response = self.session.get(url)
+            data = response.json()
+            followers = data['followers']
+            if not followers:
+                continue
+            followers = sorted(followers, key=operator.itemgetter('username'))
+            print('   {repo}:'.format(repo=repo['name']))
+            for follower in followers:
+                name = '{display_name} <{username}>'.format(**follower)
+                print('    -', name)
+            print()
+
+    def dump(self, user):
+        self.dump_followers(user)
+        self.dump_repositories(user)
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--debug', action='store_true')
+    ap.add_argument('user', metavar='<user>')
+    options = ap.parse_args()
+    if int(requests.__version__.split('.')[0]) < 1:
+        raise NotImplementedError('requests >= 1.0 is required')
+    if options.debug:
+        urllib3.add_stderr_logger()
+    dumper = Dumper()
+    dumper.dump(options.user)
+
+if __name__ == '__main__':
+    main()
+
+# vim:ts=4 sw=4 et
