@@ -59,7 +59,10 @@ class Dumper(object):
             url = 'https://bitbucket.org/api/{ident}/followers'.format(ident=ident)
             response = self.session.get(url)
             data = response.json()
-            followers = data['followers']
+            followers = [
+                fw for fw in data['followers']
+                if fw['username'] != user
+            ]
             if not followers:
                 continue
             followers = sorted(followers, key=operator.itemgetter('username'))
