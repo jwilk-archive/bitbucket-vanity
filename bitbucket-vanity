@@ -23,6 +23,7 @@
 import argparse
 import operator
 
+import requests
 import urllib3
 import requests
 
