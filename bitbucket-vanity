@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright © 2013 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2013-2015 Jakub Wilk <jwilk@jwilk.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -43,7 +43,7 @@ class Dumper(object):
         followers = sorted(followers, key=operator.itemgetter('username'))
         for follower in followers:
             name = '{display_name} <{username}>'.format(**follower)
-            print(' -', name)
+            print('-', name)
         print()
 
     def dump_repositories(self, user):
@@ -66,10 +66,10 @@ class Dumper(object):
             if not followers:
                 continue
             followers = sorted(followers, key=operator.itemgetter('username'))
-            print('   {repo}:'.format(repo=repo['name']))
+            print('  {repo}:'.format(repo=repo['name']))
             for follower in followers:
                 name = '{display_name} <{username}>'.format(**follower)
-                print('    -', name)
+                print('  -', name)
             print()
 
     def dump(self, user):
