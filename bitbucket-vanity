@@ -21,11 +21,14 @@
 # SOFTWARE.
 
 import argparse
+import concurrent.futures
 import logging
 import operator
 
 import requests
 import urllib3
+
+max_workers = 8
 
 class Dumper(object):
 
@@ -47,6 +50,11 @@ class Dumper(object):
             print('-', name)
         print()
 
+    def async_get(self, urls):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for response in executor.map(self.session.get, urls):
+                yield response
+
     def dump_repositories(self, user):
         print('repositories:')
         print()
@@ -55,13 +63,15 @@ class Dumper(object):
         data = response.json()
         repos = data['repositories']
         repos = sorted(repos, key=operator.itemgetter('name'))
-        for repo in repos:
-            ident = repo['resource_uri'].lstrip('/')
-            url = 'https://bitbucket.org/api/{ident}/followers'.format(ident=ident)
-            response = self.session.get(url)
-            data = response.json()
+        repos_followers = self.async_get(
+            'https://bitbucket.org/api/{ident}/followers'.format(ident=ident)
+            for repo in repos
+            for ident in {repo['resource_uri'].lstrip('/')}
+        )
+        for repo, followers in zip(repos, repos_followers):
+            followers = followers.json()
             followers = [
-                fw for fw in data['followers']
+                fw for fw in followers['followers']
                 if fw['username'] != user
             ]
             if not followers:
