@@ -35,7 +35,7 @@ class Dumper(object):
 
     def get(self, url):
         request = urllib.request.Request(url, headers={'User-Agent': user_agent})
-        with urllib.request.urlopen(request) as fp:
+        with urllib.request.urlopen(request, cadefault=True) as fp:
             data = fp.read()
         data = data.decode('UTF-8')
         return json.loads(data)
