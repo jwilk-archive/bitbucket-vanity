@@ -24,7 +24,6 @@ import argparse
 import concurrent.futures
 import http.client
 import json
-import logging
 import operator
 import urllib.request
 
