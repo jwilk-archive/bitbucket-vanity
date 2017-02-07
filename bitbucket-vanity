@@ -27,7 +27,7 @@ import json
 import operator
 import urllib.request
 
-user_agent = 'bitbucket-vanity (https://bitbucket.org/jwilk/bitbucket-vanity)'
+user_agent = 'bitbucket-vanity (https://github.com/jwilk/bitbucket-vanity)'
 max_workers = 8
 
 class Dumper(object):
