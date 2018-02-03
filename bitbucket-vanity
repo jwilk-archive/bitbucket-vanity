@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# encoding=UTF-8
 
 # Copyright © 2013-2017 Jakub Wilk <jwilk@jwilk.net>
 # SPDX-License-Identifier: MIT
@@ -9,6 +10,8 @@ import http.client
 import json
 import operator
 import urllib.request
+
+lambda: (yield from 0)  # Python >= 3.3 is required
 
 user_agent = 'bitbucket-vanity (https://github.com/jwilk/bitbucket-vanity)'
 max_workers = 8
